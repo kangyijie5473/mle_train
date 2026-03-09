@@ -1,0 +1,23 @@
+# 忽略模型文件
+*.bin
+*.pt
+*.pth
+*.safetensors
+*.onnx
+*.gguf
+*.awq
+*.h5
+
+# 忽略量化后的模型目录
+DeepSeek-R1-Distill-Qwen-14B-AWQ/
+
+# 忽略 Python 缓存
+__pycache__/
+*.py[cod]
+
+# 忽略环境配置
+.env
+.venv
+env/
+venv/
+.DS_Store

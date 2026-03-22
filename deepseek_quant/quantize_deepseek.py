@@ -29,7 +29,6 @@ def quantize_model(model_path, quant_path, n_samples=512, max_seq_len=2048):
     # 使用 trust_remote_code=True 因为 DeepSeek 模型可能需要
     model = AutoModelForCausalLM.from_pretrained(
         model_path, 
-        device_map="auto", 
         torch_dtype="auto",
         trust_remote_code=True
     )
@@ -69,7 +68,7 @@ def quantize_model(model_path, quant_path, n_samples=512, max_seq_len=2048):
     # W4A16: 权重 4-bit, 激活 16-bit (标准的 AWQ 配置)
     # 忽略 lm_head 层以保持精度
     logger.info("配置量化参数 (W4A16 AWQ)...")
-    
+
     recipe = QuantizationModifier(
         targets="Linear",
         scheme="W4A16", 

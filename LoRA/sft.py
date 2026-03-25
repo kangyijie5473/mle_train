@@ -11,7 +11,7 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
 )
-from peft import LoraConfig, prepare_model_for_kbit_training
+from peft import LoraConfig, prepare_model_for_kbit_training, PeftModel
 from trl import SFTTrainer, SFTConfig
 
 
@@ -21,7 +21,8 @@ def main():
     parser.add_argument("--data_path", type=str, default="./lora_dataset.json")
     args, _ = parser.parse_known_args()
 
-    output_dir       = "./heretic-DeepSeek-lora"
+    output_dir       = args.model_name_or_path + "-lora"
+    merge_dir = output_dir + "-merged"
     num_train_epochs = 3
     learning_rate    = 2e-4
     lora_r           = 8
@@ -124,7 +125,7 @@ def main():
         task_type="CAUSAL_LM",
         # Qwen2 架构：只训练 attention 的 q/v，节省最多显存
         # 确认能跑后，可逐步加回 "k_proj", "o_proj"
-        target_modules=["q_proj", "v_proj"],
+        target_modules=["q_proj", "v_proj","k_proj", "o_proj"],
     )
 
     # 6. 训练配置
@@ -171,7 +172,16 @@ def main():
 
     print(f"保存 LoRA 权重到 {output_dir}")
     trainer.model.save_pretrained(output_dir)
-    tokenizer.save_pretrained(output_dir)
+    base_model = AutoModelForCausalLM.from_pretrained(
+        args.model_name_or_path,
+        trust_remote_code=True,
+    )
+    peft_model = PeftModel.from_pretrained(
+        base_model,
+        output_dir
+    )
+    peft_model.merge_and_unload()
+    peft_model.save_pretrained(merge_dir)       
     print("完成！")
 
 
